@@ -19,6 +19,4 @@ urlpatterns = [
     path('add_permission/', views.TodoPermissionCreateView.as_view(), name='add_permission'),
     path('delete_permission/<int:pk>/', views.TodoPermissionDeleteView.as_view(), name='delete_permission'),
 
-    # path('logout/', LogoutView.as_view(), name='logout'),
-    # path('logout/', views.UserLogoutView.as_view(), name='logout'),
 ]

@@ -19,10 +19,6 @@ class ToDoList(LoginRequiredMixin, ListView):
     template_name = 'todo_list/todo_list.html'
     context_object_name = 'todo_list'
 
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     context['todo_list'] = context['todo_list'].filter(user=self.request.user)
-    #     return context
     def get_queryset(self):
         user = self.request.user
         return ToDo.objects.filter(Q(todopermission__user=user, todopermission__reading=True)).distinct()
@@ -34,15 +30,18 @@ class ToDoDetail(LoginRequiredMixin, DetailView):
     context_object_name = 'todo'
 
     def dispatch(self, request, *args, **kwargs):
+        # Проверим, есть ли у пользователя право на просмотр данной задачи. Если прав нет, выйдет ошибка 403
         todo = self.get_object()
         user = request.user
 
-        try:
-            permission = TodoPermission.objects.get(user=user, todo=todo)
-            if not permission.reading:
+        if not todo.user == user:
+            #у автора права всегда есть
+            try:
+                permission = TodoPermission.objects.get(user=user, todo=todo)
+                if not permission.reading:
+                    raise PermissionDenied
+            except TodoPermission.DoesNotExist:
                 raise PermissionDenied
-        except TodoPermission.DoesNotExist:
-            raise PermissionDenied
 
         return super(ToDoDetail, self).dispatch(request, *args, **kwargs)
 
@@ -59,6 +58,7 @@ class ToDoCreate(LoginRequiredMixin, CreateView):
 
         response = super(ToDoCreate, self).form_valid(form)
 
+        # Сразу создадим запись со всеми правами для автора задачи
         TodoPermission.objects.create(
             user=self.request.user,
             todo=form.instance,
@@ -78,15 +78,18 @@ class ToDoUpdate(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy('todo_list')
 
     def dispatch(self, request, *args, **kwargs):
+        # Проверим, есть ли у пользователя право на изменение данной задачи. Если прав нет, выйдет ошибка 403
         todo = self.get_object()
         user = request.user
 
-        try:
-            permission = TodoPermission.objects.get(user=user, todo=todo)
-            if not permission.updating:
+        # у автора права всегда есть
+        if not todo.user == user:
+            try:
+                permission = TodoPermission.objects.get(user=user, todo=todo)
+                if not permission.updating:
+                    raise PermissionDenied
+            except TodoPermission.DoesNotExist:
                 raise PermissionDenied
-        except TodoPermission.DoesNotExist:
-            raise PermissionDenied
 
         return super(ToDoUpdate, self).dispatch(request, *args, **kwargs)
 
@@ -97,15 +100,18 @@ class ToDoDelete(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('todo_list')
 
     def dispatch(self, request, *args, **kwargs):
+        # Проверим, есть ли у пользователя право на удаление данной задачи. Если прав нет, выйдет ошибка 403
         todo = self.get_object()
         user = request.user
 
-        try:
-            permission = TodoPermission.objects.get(user=user, todo=todo)
-            if not permission.updating:
+        # у автора права всегда есть
+        if not todo.user == user:
+            try:
+                permission = TodoPermission.objects.get(user=user, todo=todo)
+                if not permission.updating:
+                    raise PermissionDenied
+            except TodoPermission.DoesNotExist:
                 raise PermissionDenied
-        except TodoPermission.DoesNotExist:
-            raise PermissionDenied
 
         return super(ToDoDelete, self).dispatch(request, *args, **kwargs)
 
@@ -165,13 +171,10 @@ class TodoPermissionCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('task_permissions')
 
     def get_form_kwargs(self):
+        # Отправим текущего пользователя в класс формы, чтобы по нему установить фильтр к полям
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
-
-    def form_valid(self, form):
-        response = super().form_valid(form)
-        return response
 
 
 class TodoPermissionDeleteView(LoginRequiredMixin, DeleteView):
@@ -182,6 +185,5 @@ class TodoPermissionDeleteView(LoginRequiredMixin, DeleteView):
     def get_queryset(self):
         queryset = super().get_queryset()
         # Ensure that the user can only delete permissions they own or have access to
-        # return queryset.filter(todo__user=self.request.user) | queryset.filter(user=self.request.user)
         return queryset.filter(todo__user=self.request.user).exclude(user=self.request.user)
 
