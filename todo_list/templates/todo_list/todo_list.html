@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Список задач</title>
+</head>
+<body>
+{% if request.user.is_authenticated %}
+  <p>{{request.user}}</p>
+  <a href="{% url 'logout' %}">Выйти</a>
+{% else %}
+  <a href="{% url 'login' %}">Войти</a>
+{% endif %}
+<hr>
+<table>
+  <tr>
+    <th>Список задач</th>
+
+  </tr>
+  {% for todo in todo_list %}
+  <tr>
+    <td><a href="{% url 'todo' todo.id %}">{{todo.title}}</a> </td>
+    <td>{{ todo.is_done }}</td>
+    <td><a href="{% url 'update' todo.id %}">Изменить</a> </td>
+    <td><a href="{% url 'delete' todo.id %}">х</a> </td>
+  </tr>
+
+    {% endfor %}
+</table>
+
+<a href="{% url 'create' %}">Добавить</a>
+<a href="{% url 'task_permissions' %}">Права</a>
+
+
+</body>
+</html>
+

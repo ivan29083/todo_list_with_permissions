@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<form method="POST">
+    {% csrf_token %}
+    <p> Удалить задачу "{{todo}}". Вы уверены? </p>
+    <input type="submit" value="Да">
+    <a href="{% url 'todo_list' %}">Назад</a>
+
+</form>
+</body>
+</html>

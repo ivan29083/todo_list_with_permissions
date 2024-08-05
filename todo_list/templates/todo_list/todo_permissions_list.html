@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Права доступа к моим задачам</title>
+</head>
+<body>
+<h1>Права доступа к моим задачам</h1>
+
+<table border="1">
+    <thead>
+        <tr>
+            <th>Задача</th>
+            <th>Пользователь</th>
+            <th>Чтение</th>
+            <th>Обновление</th>
+            <th>Удаление</th>
+            <th>  </th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for todo, permissions in todo_permissions.items %}
+            {% for permission in permissions %}
+                <tr>
+                    <td><a href="{% url 'todo' todo.id %}">{{todo.title}}</a> </td>
+                    <td>{{ permission.user.username }}</td>
+                    <td>{{ permission.reading }}</td>
+                    <td>{{ permission.updating }}</td>
+                    <td>{{ permission.deleting }}</td>
+                    <td>
+                        {% if permission.can_delete %}
+                            <a href="{% url 'delete_permission' permission.pk %}">X</a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        {% endfor %}
+    </tbody>
+</table>
+<a href="{% url 'add_permission' %}"><button>Добавить</button></a>
+    <a href="{% url 'todo_list' %}">Обратно</a>
+
+</body>
+</html>

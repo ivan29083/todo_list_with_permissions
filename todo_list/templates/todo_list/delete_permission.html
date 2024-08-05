@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Удалить права доступа</title>
+</head>
+<body>
+<h1>Удалить права доступа</h1>
+
+<p>Вы уверены, что хотите удалить эти права доступа?</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Удалить</button>
+    <a href="{% url 'task_permissions' %}">Отмена</a>
+</form>
+
+</body>
+</html>
